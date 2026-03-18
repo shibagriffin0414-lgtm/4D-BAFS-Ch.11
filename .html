@@ -1,517 +1,383 @@
-import React, { useState, useEffect } from 'react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAFS Hub - Depreciation</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { background-color: #020617; color: #cbd5e1; font-family: ui-sans-serif, system-ui, sans-serif; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .mindmap-children { display: none; }
+        .mindmap-children.expanded { display: block; }
+    </style>
+</head>
+<body class="min-h-screen selection:bg-indigo-500/30">
 
-// --- BULLETPROOF ICONS (No external dependencies) ---
-const Icon = ({ name, size = 24, className = "" }) => {
-  const svgs = {
-    BookOpen: <><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>,
-    Network: <><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></>,
-    Video: <><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></>,
-    Brain: <><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></>,
-    ChevronRight: <polyline points="9 18 15 12 9 6"/>,
-    ChevronDown: <polyline points="6 9 12 15 18 9"/>,
-    CheckCircle: <><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></>,
-    XCircle: <><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></>,
-    Refresh: <><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></>,
-    Calculator: <><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="14.01"/><line x1="16" y1="10" x2="16" y2="10.01"/><line x1="12" y1="14" x2="12" y2="14.01"/><line x1="12" y1="10" x2="12" y2="10.01"/><line x1="8" y1="14" x2="8" y2="14.01"/><line x1="8" y1="10" x2="8" y2="10.01"/><line x1="8" y1="18" x2="16" y2="18"/></>,
-    FileText: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></>,
-    ExternalLink: <><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></>
-  };
-
-  return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width={size} 
-      height={size} 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      className={className}
-    >
-      {svgs[name]}
-    </svg>
-  );
-};
-
-// --- DATA ---
-
-const MIND_MAP_DATA = {
-  id: 'root',
-  label: 'Depreciation of Non-Current Assets',
-  children: [
-    {
-      id: 'expenditure',
-      label: '1. Types of Expenditure',
-      children: [
-        { id: 'cap-exp', label: 'Capital Expenditure (Long-term, Asset)', children: [{ id: 'ce-ex', label: 'Purchase price, Installation, Freight, Initial testing' }] },
-        { id: 'rev-exp', label: 'Revenue Expenditure (Short-term, Expense)', children: [{ id: 're-ex', label: 'Regular repairs, Fuel, Wages, Maintenance' }] }
-      ]
-    },
-    {
-      id: 'methods',
-      label: '2. Depreciation Methods',
-      children: [
-        { id: 'sl', label: 'Straight-Line Method', children: [{ id: 'sl-f', label: '(Cost - Residual) / Useful Life' }] },
-        { id: 'rb', label: 'Reducing-Balance Method', children: [{ id: 'rb-f', label: 'Net Book Value × Fixed %' }] },
-        { id: 'ub', label: 'Usage-Based Method', children: [{ id: 'ub-f', label: 'Rate per unit × Actual Output' }] }
-      ]
-    },
-    {
-      id: 'entries',
-      label: '3. Accounting Entries',
-      children: [
-        { id: 'ae-1', label: 'Charge: Dr Depreciation, Cr Accumulated Depreciation' },
-        { id: 'ae-2', label: 'Transfer: Dr Profit & Loss, Cr Depreciation' },
-        { id: 'ae-3', label: 'Net Book Value (NBV) = Cost - Accumulated Depreciation' }
-      ]
-    },
-    {
-      id: 'disposal',
-      label: '4. Disposal & Trade-in',
-      children: [
-        { id: 'disp-1', label: 'Dr Disposal, Cr Asset (Transfer Cost)' },
-        { id: 'disp-2', label: 'Dr Accum. Dep, Cr Disposal (Transfer Dep.)' },
-        { id: 'disp-3', label: 'Dr Bank/Cash, Cr Disposal (Proceeds)' },
-        { id: 'disp-4', label: 'Balance = Gain or Loss on Disposal' }
-      ]
-    }
-  ]
-};
-
-const VIDEOS_DATA = [
-  { title: "Video 1", url: "https://youtu.be/neiDD6-_csM?si=-URXljF4VH3rcfy0" },
-  { title: "Video 2", url: "https://youtu.be/-dRO_ACAxH4?si=f8iS8kwy4nOHe_5Q" },
-  { title: "Video 3", url: "https://youtu.be/ileKzYY8m00?si=DVSQD4XWgvNwIHAN" },
-  { title: "Video 4", url: "https://youtu.be/a-D5EvJ_rQo?si=yspiEBo4uGBc17za" },
-  { title: "Video 5", url: "https://youtu.be/ulmlcSNyR7w?si=a2M_jbSDB1_8Yiyd" },
-  { title: "Video 6", url: "https://youtu.be/5PQ8eW5EWpw?si=WAq3Olh4unoLyB0t" },
-  { title: "Video 7", url: "https://youtu.be/BCBpSTD2oAQ?si=Q7jMybPcQ1PBZcDI" },
-  { title: "Video 8", url: "https://youtu.be/w1kD7DGbdo4?si=ESbO24P6NJ6XHYvT" },
-  { title: "Video 9", url: "https://youtu.be/ndMPuMRusEs?si=wdyrVCPxl2nVLLdV" },
-  { title: "Video 10", url: "https://youtu.be/eP7B4v_4cdc?si=9fm_pnkSRAcGHIg7" },
-  { title: "Video 11", url: "https://youtu.be/BCBpSTD2oAQ?si=EhVHdxm1k9xHIc3K" },
-  { title: "Video 12", url: "https://youtu.be/NnBvXqWg8xw?si=p8_X0V6KNZ5wnWQ2" }
-];
-
-// --- UTILS FOR QUESTION GENERATOR ---
-
-// Bulletproof currency formatter
-const formatCurrency = (num) => '$' + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
-const generateQuestion = () => {
-  const types = ['classification', 'straight-line', 'reducing-balance', 'entries', 'nbv'];
-  const type = types[Math.floor(Math.random() * types.length)];
-
-  let question, options, answerIndex, explanation;
-
-  if (type === 'classification') {
-    const items = [
-      { name: "Purchase price of a new delivery van", type: "Capital" },
-      { name: "Freight charges for delivering a new machine", type: "Capital" },
-      { name: "Installation cost of a new factory plant", type: "Capital" },
-      { name: "Engine repair on a second-hand van BEFORE it is ready for use", type: "Capital" },
-      { name: "Annual motor vehicle license fee", type: "Revenue" },
-      { name: "Monthly wages for the machine operator", type: "Revenue" },
-      { name: "Regular maintenance of office equipment", type: "Revenue" },
-      { name: "Petrol costs for the delivery van", type: "Revenue" }
-    ];
-    const item = items[Math.floor(Math.random() * items.length)];
-    question = `Is the following considered Capital Expenditure or Revenue Expenditure?\n\n"${item.name}"`;
-    options = ["Capital Expenditure", "Revenue Expenditure", "Neither", "Both"];
-    answerIndex = item.type === "Capital" ? 0 : 1;
-    explanation = item.type === "Capital" 
-      ? "Capital expenditures are costs incurred to acquire a non-current asset or bring it to its intended working condition."
-      : "Revenue expenditures are day-to-day operational costs that provide short-term benefits and are expensed immediately.";
-
-  } else if (type === 'straight-line') {
-    const cost = Math.floor(Math.random() * 9 + 2) * 10000;
-    const residual = Math.floor(Math.random() * 5 + 1) * 1000;
-    const life = Math.floor(Math.random() * 4 + 4);
-    const dep = (cost - residual) / life;
-    
-    question = `A company buys a machine for ${formatCurrency(cost)}. Its estimated useful life is ${life} years, with a residual value of ${formatCurrency(residual)}. What is the annual depreciation charge using the Straight-Line Method?`;
-    
-    const correct = dep;
-    const w1 = cost / life;
-    const w2 = (cost - residual) / (life + 1);
-    const w3 = (cost + residual) / life;
-    
-    const rawOptions = [correct, w1, w2, w3].map(Math.round);
-    const shuffled = rawOptions.sort(() => Math.random() - 0.5);
-    options = shuffled.map(o => formatCurrency(o));
-    answerIndex = shuffled.indexOf(Math.round(correct));
-    explanation = `Formula: (Cost - Residual) / Useful Life.\n(${formatCurrency(cost)} - ${formatCurrency(residual)}) / ${life} = ${formatCurrency(dep)}`;
-
-  } else if (type === 'reducing-balance') {
-    const cost = Math.floor(Math.random() * 5 + 5) * 10000;
-    const rate = [10, 20, 25, 40][Math.floor(Math.random() * 4)];
-    const year = Math.floor(Math.random() * 2 + 2);
-    
-    const y1Dep = cost * (rate / 100);
-    const nbv1 = cost - y1Dep;
-    const y2Dep = nbv1 * (rate / 100);
-    const nbv2 = nbv1 - y2Dep;
-    const y3Dep = nbv2 * (rate / 100);
-    
-    const correct = year === 2 ? y2Dep : y3Dep;
-    
-    question = `A motor vehicle is purchased for ${formatCurrency(cost)}. Depreciation is charged at ${rate}% per annum using the Reducing-Balance Method. What is the depreciation charge for Year ${year}?`;
-    
-    const w1 = cost * (rate / 100);
-    const w2 = year === 2 ? nbv1 : nbv2;
-    const w3 = correct * 1.5;
-    
-    const rawOptions = [correct, w1, w2, w3].map(Math.round);
-    const shuffled = rawOptions.sort(() => Math.random() - 0.5);
-    options = shuffled.map(o => formatCurrency(o));
-    answerIndex = shuffled.indexOf(Math.round(correct));
-    
-    explanation = year === 2 
-      ? `Year 1 Dep: ${formatCurrency(cost)} × ${rate}% = ${formatCurrency(y1Dep)}.\nYear 1 NBV: ${formatCurrency(nbv1)}.\nYear 2 Dep: ${formatCurrency(nbv1)} × ${rate}% = ${formatCurrency(y2Dep)}.`
-      : `Year 1 NBV: ${formatCurrency(nbv1)}.\nYear 2 NBV: ${formatCurrency(nbv2)}.\nYear 3 Dep: ${formatCurrency(nbv2)} × ${rate}% = ${formatCurrency(y3Dep)}.`;
-
-  } else if (type === 'entries') {
-    question = "Which of the following is the correct double entry to record the annual depreciation charge for machinery?";
-    const correctStr = "Dr Depreciation, Cr Accumulated Depreciation - Machinery";
-    options = [
-      correctStr,
-      "Dr Machinery, Cr Depreciation",
-      "Dr Accumulated Depreciation - Machinery, Cr Depreciation",
-      "Dr Profit & Loss, Cr Machinery"
-    ];
-    const shuffled = options.sort(() => Math.random() - 0.5);
-    options = shuffled;
-    answerIndex = shuffled.indexOf(correctStr);
-    explanation = "Depreciation is an expense (Debit) and it increases the contra-asset account Accumulated Depreciation (Credit). The asset's cost account remains unchanged.";
-  } else {
-    const cost = Math.floor(Math.random() * 8 + 2) * 10000;
-    const accumDep = Math.floor(Math.random() * (cost * 0.8));
-    question = `An asset has a cost of ${formatCurrency(cost)} and an accumulated depreciation of ${formatCurrency(accumDep)}. What is its Net Book Value (NBV)?`;
-    const correct = cost - accumDep;
-    const rawOptions = [correct, cost + accumDep, accumDep, cost];
-    const shuffled = rawOptions.sort(() => Math.random() - 0.5);
-    options = shuffled.map(o => formatCurrency(o));
-    answerIndex = shuffled.indexOf(correct);
-    explanation = `Net Book Value (NBV) = Cost - Accumulated Depreciation.\n${formatCurrency(cost)} - ${formatCurrency(accumDep)} = ${formatCurrency(correct)}`;
-  }
-
-  return { question, options, answerIndex, explanation };
-};
-
-// --- COMPONENTS ---
-
-const MindMapNode = ({ node, defaultExpanded = false }) => {
-  const [expanded, setExpanded] = useState(defaultExpanded);
-  const hasChildren = node.children && node.children.length > 0;
-
-  return (
-    <div className="ml-4 mt-2">
-      <div 
-        className={`flex items-center p-3 rounded-lg border ${hasChildren ? 'cursor-pointer hover:bg-slate-800 border-slate-700 bg-slate-800/50' : 'bg-slate-900 border-slate-800'} transition-colors`}
-        onClick={() => hasChildren && setExpanded(!expanded)}
-      >
-        {hasChildren && (
-          <span className="mr-2 text-indigo-400 flex-shrink-0">
-            {expanded ? <Icon name="ChevronDown" size={18} /> : <Icon name="ChevronRight" size={18} />}
-          </span>
-        )}
-        {!hasChildren && <span className="w-6" />}
-        <span className="text-slate-200 font-medium">{node.label}</span>
-      </div>
-      
-      {hasChildren && expanded && (
-        <div className="border-l-2 border-slate-700 ml-4 pl-2 mt-2">
-          {node.children.map(child => (
-            <MindMapNode key={child.id} node={child} defaultExpanded={false} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// --- MAIN APP ---
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState('summary');
-  
-  // Quiz State
-  const [currentQuiz, setCurrentQuiz] = useState(null);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [score, setScore] = useState({ correct: 0, total: 0 });
-
-  useEffect(() => {
-    if (!currentQuiz) {
-      setCurrentQuiz(generateQuestion());
-    }
-  }, [currentQuiz]);
-
-  const handleAnswerSelect = (index) => {
-    if (selectedAnswer !== null) return;
-    setSelectedAnswer(index);
-    if (index === currentQuiz.answerIndex) {
-      setScore(s => ({ ...s, correct: s.correct + 1, total: s.total + 1 }));
-    } else {
-      setScore(s => ({ ...s, total: s.total + 1 }));
-    }
-  };
-
-  const nextQuestion = () => {
-    setSelectedAnswer(null);
-    setCurrentQuiz(generateQuestion());
-  };
-
-  const navItems = [
-    { id: 'summary', label: 'Summary', icon: 'FileText' },
-    { id: 'mindmap', label: 'Mind Map', icon: 'Network' },
-    { id: 'videos', label: 'Videos', icon: 'Video' },
-    { id: 'practice', label: 'Practice', icon: 'Brain' },
-  ];
-
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-300 font-sans selection:bg-indigo-500/30">
-      {/* Header */}
-      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between">
-          <div className="flex items-center gap-3 mb-4 md:mb-0">
-            <div className="p-2 bg-indigo-600 rounded-lg">
-              <Icon name="Calculator" size={24} className="text-white" />
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center gap-3 mb-4 md:mb-0">
+                <div class="p-2 bg-indigo-600 rounded-lg">
+                    <i data-lucide="calculator" class="text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-tight">HKDSE BAFS Hub</h1>
+                    <p class="text-xs text-slate-400">Chapter 11: Depreciation of Non-Current Assets</p>
+                </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-white tracking-tight">HKDSE BAFS Hub</h1>
-              <p className="text-xs text-slate-400">Chapter 11: Depreciation of Non-Current Assets</p>
-            </div>
-          </div>
-          
-          <nav className="flex gap-1 bg-slate-950 p-1 rounded-xl overflow-x-auto max-w-full">
-            {navItems.map(item => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                  activeTab === item.id 
-                    ? 'bg-indigo-600 text-white shadow-lg' 
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-                }`}
-              >
-                <Icon name={item.icon} size={16} />
-                {item.label}
-              </button>
-            ))}
-          </nav>
+            
+            <nav class="flex gap-1 bg-slate-950 p-1 rounded-xl overflow-x-auto max-w-full">
+                <button id="btn-summary" onclick="switchTab('summary')" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap bg-indigo-600 text-white shadow-lg">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> Summary
+                </button>
+                <button id="btn-mindmap" onclick="switchTab('mindmap')" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-800">
+                    <i data-lucide="network" class="w-4 h-4"></i> Mind Map
+                </button>
+                <button id="btn-videos" onclick="switchTab('videos')" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-800">
+                    <i data-lucide="video" class="w-4 h-4"></i> Videos
+                </button>
+                <button id="btn-practice" onclick="switchTab('practice')" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-800">
+                    <i data-lucide="brain-circuit" class="w-4 h-4"></i> Practice
+                </button>
+            </nav>
         </div>
-      </header>
+    </header>
 
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-8">
         
-        {/* SUMMARY VIEW */}
-        {activeTab === 'summary' && (
-          <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                <Icon name="BookOpen" className="text-indigo-400" />
-                Chapter Digest
-              </h2>
-              
-              <div className="grid gap-6 md:grid-cols-2">
+        <!-- SUMMARY TAB -->
+        <div id="tab-summary" class="tab-content active space-y-8">
+            <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                    <i data-lucide="book-open" class="text-indigo-400"></i> Chapter Digest
+                </h2>
                 
-                <div className="bg-slate-950 p-6 rounded-xl border border-slate-800/50">
-                  <h3 className="text-lg font-bold text-indigo-300 mb-3">1. Introduction to Depreciation</h3>
-                  <div className="text-slate-400 leading-relaxed text-sm">
-                    <p>Non-current assets provide <strong className="text-indigo-200">long-term benefits</strong> (&gt;1 accounting period). Under <strong className="text-indigo-200">accrual accounting</strong>, the cost is not fully expensed in the acquisition year. Instead, it is allocated via <strong className="text-indigo-200">depreciation</strong> over its useful life. Applies only to <strong className="text-indigo-200">tangible assets</strong>.</p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-950 p-6 rounded-xl border border-slate-800/50">
-                  <h3 className="text-lg font-bold text-indigo-300 mb-3">2. Capital vs. Revenue Expenditure</h3>
-                  <div className="text-slate-400 leading-relaxed text-sm">
-                    <p><strong className="text-indigo-200">Capital Expenditure</strong> provides long-term benefits and is <strong className="text-indigo-200">capitalized</strong> (recorded as an asset). It includes the <strong className="text-indigo-200">purchase price and directly attributable costs</strong> (freight, installation, testing). <strong className="text-indigo-200">Revenue Expenditure</strong> provides short-term benefits (day-to-day ops) like rent, wages, and regular repairs. <strong className="text-red-300">Exception:</strong> Repairs required before an asset is ready for use are capitalized.</p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-950 p-6 rounded-xl border border-slate-800/50">
-                  <h3 className="text-lg font-bold text-indigo-300 mb-3">3. Commonly Used Depreciation Methods</h3>
-                  <div className="text-slate-400 leading-relaxed text-sm space-y-2">
-                    <p>1. <strong className="text-indigo-200">Straight-Line:</strong> Constant charge each period. Formula: <strong className="text-indigo-200">(Cost - Residual Value) / Useful Life</strong>.</p>
-                    <p>2. <strong className="text-indigo-200">Reducing-Balance:</strong> Diminishing charge. Formula: <strong className="text-indigo-200">Net Book Value (NBV) × Fixed % Rate</strong>.</p>
-                    <p>3. <strong className="text-indigo-200">Usage-Based:</strong> Varies with output. Formula: <strong className="text-indigo-200">[(Cost - Residual) / Total Estimated Output] × Actual Output</strong>.</p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-950 p-6 rounded-xl border border-slate-800/50">
-                  <h3 className="text-lg font-bold text-indigo-300 mb-3">4. Accounting Entries</h3>
-                  <div className="text-slate-400 leading-relaxed text-sm">
-                    <p>To record depreciation: <strong className="text-indigo-200">Dr Depreciation (Expense)</strong> | <strong className="text-indigo-200">Cr Accumulated Depreciation (Contra-asset)</strong>.<br/>To transfer at year-end: <strong className="text-indigo-200">Dr Profit & Loss</strong> | <strong className="text-indigo-200">Cr Depreciation</strong>.</p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-950 p-6 rounded-xl border border-slate-800/50 md:col-span-2">
-                  <h3 className="text-lg font-bold text-indigo-300 mb-3">5. Disposal of Non-Current Assets</h3>
-                  <div className="text-slate-400 leading-relaxed text-sm space-y-1">
-                    <p>Steps to dispose:</p>
-                    <p>1. Transfer cost: <strong className="text-indigo-200">Dr Disposal | Cr Non-current Asset</strong></p>
-                    <p>2. Transfer accumulated dep: <strong className="text-indigo-200">Dr Accumulated Dep | Cr Disposal</strong></p>
-                    <p>3. Record proceeds: <strong className="text-indigo-200">Dr Cash/Bank | Cr Disposal</strong></p>
-                    <p>4. Balance is <strong className="text-green-400">Gain (Cr Disposal)</strong> or <strong className="text-red-400">Loss (Dr Disposal)</strong>.</p>
-                  </div>
-                </div>
-
-              </div>
-
-              <div className="mt-8 bg-indigo-950/30 border border-indigo-500/20 p-6 rounded-xl">
-                <h3 className="text-lg font-bold text-indigo-300 mb-4">Core Formulas</h3>
-                <div className="grid gap-4 md:grid-cols-2 text-sm">
-                  <div className="bg-slate-900 p-4 rounded-lg flex flex-col justify-center items-center text-center">
-                    <span className="text-slate-400 mb-2 font-medium">Straight-Line Method</span>
-                    <div className="font-mono text-indigo-200 bg-slate-950 px-4 py-2 rounded border border-slate-800">
-                      <div className="border-b border-indigo-500/50 pb-1 mb-1">Cost - Residual Value</div>
-                      <div>Estimated Useful Life</div>
+                <div class="grid gap-6 md:grid-cols-2">
+                    <div class="bg-slate-950 p-6 rounded-xl border border-slate-800/50">
+                        <h3 class="text-lg font-bold text-indigo-300 mb-3">1. Introduction to Depreciation</h3>
+                        <p class="text-slate-400 leading-relaxed text-sm">Non-current assets provide <strong class="text-indigo-200">long-term benefits</strong> (&gt;1 accounting period). Under <strong class="text-indigo-200">accrual accounting</strong>, the cost is not fully expensed in the acquisition year. Instead, it is allocated via <strong class="text-indigo-200">depreciation</strong> over its useful life. Applies only to tangible assets.</p>
                     </div>
-                  </div>
-                  <div className="bg-slate-900 p-4 rounded-lg flex flex-col justify-center items-center text-center">
-                    <span className="text-slate-400 mb-2 font-medium">Reducing-Balance Method</span>
-                    <div className="font-mono text-indigo-200 bg-slate-950 px-4 py-2 rounded border border-slate-800">
-                      Net Book Value × Fixed %
+
+                    <div class="bg-slate-950 p-6 rounded-xl border border-slate-800/50">
+                        <h3 class="text-lg font-bold text-indigo-300 mb-3">2. Capital vs. Revenue Expenditure</h3>
+                        <p class="text-slate-400 leading-relaxed text-sm"><strong class="text-indigo-200">Capital Expenditure</strong> provides long-term benefits and is capitalized. It includes the purchase price and directly attributable costs. <strong class="text-indigo-200">Revenue Expenditure</strong> provides short-term benefits like rent and regular repairs. <strong class="text-red-300">Exception:</strong> Repairs required before an asset is ready for use are capitalized.</p>
                     </div>
-                  </div>
+
+                    <div class="bg-slate-950 p-6 rounded-xl border border-slate-800/50">
+                        <h3 class="text-lg font-bold text-indigo-300 mb-3">3. Depreciation Methods</h3>
+                        <div class="text-slate-400 leading-relaxed text-sm space-y-2">
+                            <p>1. <strong class="text-indigo-200">Straight-Line:</strong> Constant charge. Formula: (Cost - Residual) / Useful Life.</p>
+                            <p>2. <strong class="text-indigo-200">Reducing-Balance:</strong> Diminishing charge. Formula: Net Book Value (NBV) × Fixed %.</p>
+                            <p>3. <strong class="text-indigo-200">Usage-Based:</strong> Varies with output. Formula: Rate per unit × Actual Output.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 p-6 rounded-xl border border-slate-800/50">
+                        <h3 class="text-lg font-bold text-indigo-300 mb-3">4. Accounting Entries</h3>
+                        <p class="text-slate-400 leading-relaxed text-sm">To record: <strong class="text-indigo-200">Dr Depreciation</strong> | <strong class="text-indigo-200">Cr Accumulated Depreciation</strong>.<br/>To transfer at year-end: <strong class="text-indigo-200">Dr Profit & Loss</strong> | <strong class="text-indigo-200">Cr Depreciation</strong>.</p>
+                    </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* MIND MAP VIEW */}
-        {activeTab === 'mindmap' && (
-          <div className="animate-in fade-in duration-500">
-            <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl min-h-[60vh]">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                <Icon name="Network" className="text-indigo-400" />
-                Interactive Concept Map
-              </h2>
-              <p className="text-slate-400 mb-8 text-sm">Click on nodes with arrows to expand or collapse concepts.</p>
-              
-              <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 overflow-x-auto">
-                <MindMapNode node={MIND_MAP_DATA} defaultExpanded={true} />
-              </div>
+                <div class="mt-8 bg-indigo-950/30 border border-indigo-500/20 p-6 rounded-xl">
+                    <h3 class="text-lg font-bold text-indigo-300 mb-4">Core Formulas</h3>
+                    <div class="grid gap-4 md:grid-cols-2 text-sm">
+                        <div class="bg-slate-900 p-4 rounded-lg flex flex-col justify-center items-center text-center">
+                            <span class="text-slate-400 mb-2 font-medium">Straight-Line Method</span>
+                            <div class="font-mono text-indigo-200 bg-slate-950 px-4 py-2 rounded border border-slate-800">
+                                <div class="border-b border-indigo-500/50 pb-1 mb-1">Cost - Residual Value</div>
+                                <div>Estimated Useful Life</div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-lg flex flex-col justify-center items-center text-center">
+                            <span class="text-slate-400 mb-2 font-medium">Reducing-Balance Method</span>
+                            <div class="font-mono text-indigo-200 bg-slate-950 px-4 py-2 rounded border border-slate-800">
+                                Net Book Value × Fixed %
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-        )}
+        </div>
 
-        {/* VIDEOS VIEW */}
-        {activeTab === 'videos' && (
-          <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-              <Icon name="Video" className="text-indigo-400" />
-              Curated Video Tutorials
+        <!-- MIND MAP TAB -->
+        <div id="tab-mindmap" class="tab-content">
+            <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl min-h-[60vh]">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                    <i data-lucide="network" class="text-indigo-400"></i> Interactive Concept Map
+                </h2>
+                <p class="text-slate-400 mb-8 text-sm">Click on nodes with arrows to expand or collapse concepts.</p>
+                <div id="mindmap-container" class="bg-slate-950 p-6 rounded-xl border border-slate-800 overflow-x-auto">
+                    <!-- Rendered via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- VIDEOS TAB -->
+        <div id="tab-videos" class="tab-content max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                <i data-lucide="video" class="text-indigo-400"></i> Curated Video Tutorials
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {VIDEOS_DATA.map((video, index) => (
-                <div key={index} className="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg flex flex-col justify-between gap-4 hover:border-indigo-500/40 transition-colors">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-slate-800 text-indigo-400 font-bold rounded-full w-8 h-8 flex items-center justify-center shrink-0">
-                      {index + 1}
-                    </div>
-                    <h3 className="text-slate-200 font-medium leading-snug mt-1">
-                      {video.title}
-                    </h3>
-                  </div>
-                  <a 
-                    href={video.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="mt-auto inline-flex items-center justify-center gap-2 w-full py-2.5 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 rounded-lg font-medium transition-colors border border-indigo-500/20"
-                  >
-                    <Icon name="ExternalLink" size={16} />
-                    Watch Video
-                  </a>
+            <div id="video-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Rendered via JS -->
+            </div>
+        </div>
+
+        <!-- PRACTICE TAB -->
+        <div id="tab-practice" class="tab-content max-w-3xl mx-auto">
+            <div class="flex justify-between items-end mb-6">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="brain-circuit" class="text-indigo-400"></i> Infinite Practice
+                </h2>
+                <div class="bg-slate-900 px-4 py-2 rounded-lg border border-slate-800 text-sm">
+                    Score: <span id="score-correct" class="text-indigo-400 font-bold">0</span> / <span id="score-total">0</span>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* PRACTICE VIEW */}
-        {activeTab === 'practice' && currentQuiz && (
-          <div className="animate-in fade-in duration-500 max-w-3xl mx-auto">
-            <div className="flex justify-between items-end mb-6">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Icon name="Brain" className="text-indigo-400" />
-                Infinite Practice
-              </h2>
-              <div className="bg-slate-900 px-4 py-2 rounded-lg border border-slate-800 text-sm">
-                Score: <span className="text-indigo-400 font-bold">{score.correct}</span> / {score.total}
-              </div>
             </div>
 
-            <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl">
-              <div className="mb-8">
-                <h3 className="text-lg text-slate-200 whitespace-pre-wrap leading-relaxed">
-                  {currentQuiz.question}
-                </h3>
-              </div>
+            <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl">
+                <div class="mb-8">
+                    <h3 id="quiz-question" class="text-lg text-slate-200 whitespace-pre-wrap leading-relaxed"></h3>
+                </div>
 
-              <div className="space-y-3">
-                {currentQuiz.options.map((option, idx) => {
-                  const isSelected = selectedAnswer === idx;
-                  const isCorrect = currentQuiz.answerIndex === idx;
-                  const showCorrect = selectedAnswer !== null && isCorrect;
-                  const showWrong = isSelected && !isCorrect;
+                <div id="quiz-options" class="space-y-3">
+                    <!-- Rendered via JS -->
+                </div>
 
-                  let baseClasses = "w-full text-left p-4 rounded-xl border transition-all duration-200 flex justify-between items-center ";
-                  
-                  if (selectedAnswer === null) {
-                    baseClasses += "bg-slate-950 border-slate-800 hover:border-indigo-500 hover:bg-slate-900 text-slate-300";
-                  } else if (showCorrect) {
-                    baseClasses += "bg-green-950/40 border-green-500 text-green-200";
-                  } else if (showWrong) {
-                    baseClasses += "bg-red-950/40 border-red-500 text-red-200";
-                  } else {
-                    baseClasses += "bg-slate-950 border-slate-800 text-slate-500 opacity-50";
-                  }
-
-                  return (
-                    <button
-                      key={idx}
-                      disabled={selectedAnswer !== null}
-                      onClick={() => handleAnswerSelect(idx)}
-                      className={baseClasses}
-                    >
-                      <span>{option}</span>
-                      {showCorrect && <Icon name="CheckCircle" className="text-green-500" size={20} />}
-                      {showWrong && <Icon name="XCircle" className="text-red-500" size={20} />}
+                <div id="quiz-explanation" class="mt-8 p-5 bg-slate-950 rounded-xl border border-slate-800 hidden">
+                    <h4 id="expl-title" class="font-bold text-slate-300 mb-2 flex items-center gap-2"></h4>
+                    <p id="expl-text" class="text-slate-400 text-sm whitespace-pre-line mb-6"></p>
+                    <button onclick="nextQuestion()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex justify-center items-center gap-2 shadow-lg">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> Generate Next Question
                     </button>
-                  );
-                })}
-              </div>
-
-              {selectedAnswer !== null && (
-                <div className="mt-8 p-5 bg-slate-950 rounded-xl border border-slate-800 animate-in slide-in-from-bottom-2">
-                  <h4 className="font-bold text-slate-300 mb-2 flex items-center gap-2">
-                    {selectedAnswer === currentQuiz.answerIndex 
-                      ? <span className="text-green-400">Correct!</span> 
-                      : <span className="text-red-400">Incorrect.</span>}
-                  </h4>
-                  <p className="text-slate-400 text-sm whitespace-pre-line mb-6">
-                    {currentQuiz.explanation}
-                  </p>
-                  
-                  <button
-                    onClick={nextQuestion}
-                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex justify-center items-center gap-2 shadow-lg shadow-indigo-900/20"
-                  >
-                    <Icon name="Refresh" size={18} />
-                    Generate Next Question
-                  </button>
                 </div>
-              )}
             </div>
-          </div>
-        )}
+        </div>
 
-      </main>
-    </div>
-  );
-}
+    </main>
+
+    <script>
+        // --- DATA ---
+        const MIND_MAP_DATA = {
+            label: 'Depreciation of Non-Current Assets',
+            children: [
+                {
+                    label: '1. Types of Expenditure',
+                    children: [
+                        { label: 'Capital Expenditure (Asset)', children: [{ label: 'Purchase price, Installation, Freight' }] },
+                        { label: 'Revenue Expenditure (Expense)', children: [{ label: 'Regular repairs, Fuel, Wages' }] }
+                    ]
+                },
+                {
+                    label: '2. Depreciation Methods',
+                    children: [
+                        { label: 'Straight-Line Method', children: [{ label: '(Cost - Residual) / Useful Life' }] },
+                        { label: 'Reducing-Balance Method', children: [{ label: 'Net Book Value × Fixed %' }] }
+                    ]
+                },
+                {
+                    label: '3. Accounting Entries',
+                    children: [
+                        { label: 'Charge: Dr Depreciation, Cr Accumulated Depreciation' },
+                        { label: 'Net Book Value (NBV) = Cost - Accumulated Depreciation' }
+                    ]
+                }
+            ]
+        };
+
+        const VIDEOS_DATA = [
+            { title: "Introduction to Depreciation", url: "https://youtu.be/neiDD6-_csM" },
+            { title: "Capital vs Revenue Expenditure", url: "https://youtu.be/-dRO_ACAxH4" },
+            { title: "Straight Line Method", url: "https://youtu.be/ileKzYY8m00" },
+            { title: "Reducing Balance Method", url: "https://youtu.be/a-D5EvJ_rQo" },
+            { title: "Accounting Entries", url: "https://youtu.be/ulmlcSNyR7w" },
+            { title: "Disposal of Assets", url: "https://youtu.be/5PQ8eW5EWpw" }
+        ];
+
+        // --- TAB LOGIC ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg');
+                el.classList.add('text-slate-400');
+            });
+
+            document.getElementById('tab-' + tabId).classList.add('active');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('text-slate-400');
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg');
+        }
+
+        // --- MIND MAP LOGIC ---
+        function renderMindMapNode(node, isExpanded = false) {
+            const hasChildren = node.children && node.children.length > 0;
+            const container = document.createElement('div');
+            container.className = "ml-4 mt-2";
+
+            const header = document.createElement('div');
+            header.className = `flex items-center p-3 rounded-lg border transition-colors ${hasChildren ? 'cursor-pointer hover:bg-slate-800 border-slate-700 bg-slate-800/50' : 'bg-slate-900 border-slate-800'}`;
+
+            const iconSpan = document.createElement('span');
+            iconSpan.className = "mr-2 text-indigo-400 flex-shrink-0 w-5 h-5 flex items-center justify-center";
+            if (hasChildren) {
+                iconSpan.innerHTML = isExpanded ? '<i data-lucide="chevron-down"></i>' : '<i data-lucide="chevron-right"></i>';
+            } else {
+                iconSpan.style.width = '20px';
+            }
+            header.appendChild(iconSpan);
+
+            const labelSpan = document.createElement('span');
+            labelSpan.className = "text-slate-200 font-medium";
+            labelSpan.innerText = node.label;
+            header.appendChild(labelSpan);
+            container.appendChild(header);
+
+            if (hasChildren) {
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = `border-l-2 border-slate-700 ml-4 pl-2 mt-2 mindmap-children ${isExpanded ? 'expanded' : ''}`;
+                
+                node.children.forEach(child => {
+                    childrenContainer.appendChild(renderMindMapNode(child, false));
+                });
+
+                header.onclick = () => {
+                    const currentlyExpanded = childrenContainer.classList.contains('expanded');
+                    if (currentlyExpanded) {
+                        childrenContainer.classList.remove('expanded');
+                        iconSpan.innerHTML = '<i data-lucide="chevron-right"></i>';
+                    } else {
+                        childrenContainer.classList.add('expanded');
+                        iconSpan.innerHTML = '<i data-lucide="chevron-down"></i>';
+                    }
+                    lucide.createIcons();
+                };
+                container.appendChild(childrenContainer);
+            }
+            return container;
+        }
+
+        // --- VIDEOS LOGIC ---
+        function initVideos() {
+            const container = document.getElementById('video-grid');
+            VIDEOS_DATA.forEach((vid, idx) => {
+                container.innerHTML += `
+                <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg flex flex-col justify-between gap-4 hover:border-indigo-500/40 transition-colors">
+                  <div class="flex items-start gap-3">
+                    <div class="bg-slate-800 text-indigo-400 font-bold rounded-full w-8 h-8 flex items-center justify-center shrink-0">${idx + 1}</div>
+                    <h3 class="text-slate-200 font-medium leading-snug mt-1">${vid.title}</h3>
+                  </div>
+                  <a href="${vid.url}" target="_blank" class="mt-auto inline-flex items-center justify-center gap-2 w-full py-2.5 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 rounded-lg font-medium transition-colors border border-indigo-500/20">
+                    <i data-lucide="external-link" class="w-4 h-4"></i> Watch Video
+                  </a>
+                </div>`;
+            });
+        }
+
+        // --- PRACTICE QUIZ LOGIC ---
+        const formatCurrency = (num) => '$' + num.toLocaleString();
+
+        let quizState = { current: null, selected: null, correct: 0, total: 0 };
+
+        function generateQuestion() {
+            const types = ['classification', 'straight-line', 'reducing-balance'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            let question, options, answerIndex, explanation;
+
+            if (type === 'classification') {
+                const isCap = Math.random() > 0.5;
+                question = `Is the following considered Capital Expenditure or Revenue Expenditure?\n\n"${isCap ? 'Installation cost of a new machine' : 'Annual maintenance of equipment'}"`;
+                options = ["Capital Expenditure", "Revenue Expenditure", "Neither"];
+                answerIndex = isCap ? 0 : 1;
+                explanation = isCap ? "Capital expenditures are costs incurred to acquire an asset or bring it to working condition." : "Revenue expenditures are day-to-day operational costs.";
+            } else if (type === 'straight-line') {
+                const cost = 50000, residual = 5000, life = 5;
+                question = `A company buys a machine for $50,000. Useful life is 5 years, residual value is $5,000. What is the annual depreciation using Straight-Line?`;
+                options = ["$9,000", "$10,000", "$11,000", "$8,000"];
+                answerIndex = 0;
+                explanation = "Formula: (Cost - Residual) / Useful Life.\n($50,000 - $5,000) / 5 = $9,000";
+            } else {
+                question = `A vehicle is purchased for $40,000. Depreciation is 20% using Reducing-Balance. What is the charge for Year 2?`;
+                options = ["$8,000", "$6,400", "$32,000", "$7,200"];
+                answerIndex = 1;
+                explanation = "Y1 Dep = $40,000 × 20% = $8,000.\nY1 NBV = $32,000.\nY2 Dep = $32,000 × 20% = $6,400.";
+            }
+            return { question, options, answerIndex, explanation };
+        }
+
+        function nextQuestion() {
+            quizState.current = generateQuestion();
+            quizState.selected = null;
+            renderPractice();
+        }
+
+        function handleAnswer(index) {
+            if (quizState.selected !== null) return;
+            quizState.selected = index;
+            quizState.total++;
+            if (index === quizState.current.answerIndex) quizState.correct++;
+            renderPractice();
+        }
+
+        function renderPractice() {
+            document.getElementById('score-correct').innerText = quizState.correct;
+            document.getElementById('score-total').innerText = quizState.total;
+            document.getElementById('quiz-question').innerText = quizState.current.question;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            quizState.current.options.forEach((opt, idx) => {
+                const isSelected = quizState.selected === idx;
+                const isCorrect = quizState.current.answerIndex === idx;
+                const btn = document.createElement('button');
+                
+                let classes = "w-full text-left p-4 rounded-xl border transition-all duration-200 flex justify-between items-center ";
+                if (quizState.selected === null) {
+                    classes += "bg-slate-950 border-slate-800 hover:border-indigo-500 hover:bg-slate-900 text-slate-300 cursor-pointer";
+                    btn.onclick = () => handleAnswer(idx);
+                } else if (quizState.selected !== null && isCorrect) {
+                    classes += "bg-green-950/40 border-green-500 text-green-200";
+                } else if (isSelected && !isCorrect) {
+                    classes += "bg-red-950/40 border-red-500 text-red-200";
+                } else {
+                    classes += "bg-slate-950 border-slate-800 text-slate-500 opacity-50";
+                }
+                btn.className = classes;
+
+                let inner = `<span>${opt}</span>`;
+                if (quizState.selected !== null && isCorrect) inner += `<i data-lucide="check-circle-2" class="text-green-500"></i>`;
+                if (isSelected && !isCorrect) inner += `<i data-lucide="x-circle" class="text-red-500"></i>`;
+                btn.innerHTML = inner;
+                optionsContainer.appendChild(btn);
+            });
+
+            const explBox = document.getElementById('quiz-explanation');
+            if (quizState.selected !== null) {
+                explBox.classList.remove('hidden');
+                document.getElementById('expl-title').innerHTML = quizState.selected === quizState.current.answerIndex 
+                    ? '<span class="text-green-400">Correct!</span>' : '<span class="text-red-400">Incorrect.</span>';
+                document.getElementById('expl-text').innerText = quizState.current.explanation;
+            } else {
+                explBox.classList.add('hidden');
+            }
+            lucide.createIcons();
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('mindmap-container').appendChild(renderMindMapNode(MIND_MAP_DATA, true));
+            initVideos();
+            nextQuestion();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
