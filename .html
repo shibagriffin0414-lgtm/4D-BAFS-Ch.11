@@ -1,495 +1,521 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  BookOpen, 
-  Network, 
-  Video, 
-  BrainCircuit, 
-  ChevronRight, 
-  ChevronDown, 
-  CheckCircle2, 
-  XCircle, 
-  RefreshCw,
-  Calculator,
-  FileText,
-  ExternalLink
-} from 'lucide-react';
-
-// --- DATA & CONTENT ---
-
-const SUMMARY_CONTENT = [
-  {
-    title: "1. Introduction to Depreciation",
-    content: <p>Non-current assets provide <strong className="text-indigo-200">long-term benefits</strong> (&gt;1 accounting period). Under <strong className="text-indigo-200">accrual accounting</strong>, the cost is not fully expensed in the acquisition year. Instead, it is allocated via <strong className="text-indigo-200">depreciation</strong> over its useful life. Applies only to <strong className="text-indigo-200">tangible assets</strong>.</p>,
-  },
-  {
-    title: "2. Capital vs. Revenue Expenditure",
-    content: <p><strong className="text-indigo-200">Capital Expenditure</strong> provides long-term benefits and is <strong className="text-indigo-200">capitalized</strong> (recorded as an asset). It includes the <strong className="text-indigo-200">purchase price and directly attributable costs</strong> (freight, installation, testing). <strong className="text-indigo-200">Revenue Expenditure</strong> provides short-term benefits (day-to-day ops) like rent, wages, and regular repairs. <strong className="text-red-300">Exception:</strong> Repairs required before an asset is ready for use are capitalized.</p>,
-  },
-  {
-    title: "3. Commonly Used Depreciation Methods",
-    content: <div className="space-y-2">
-      <p>1. <strong className="text-indigo-200">Straight-Line:</strong> Constant charge each period. Formula: <strong className="text-indigo-200">(Cost - Residual Value) / Useful Life</strong>.</p>
-      <p>2. <strong className="text-indigo-200">Reducing-Balance:</strong> Diminishing charge. Formula: <strong className="text-indigo-200">Net Book Value (NBV) × Fixed % Rate</strong>.</p>
-      <p>3. <strong className="text-indigo-200">Usage-Based:</strong> Varies with output. Formula: <strong className="text-indigo-200">[(Cost - Residual) / Total Estimated Output] × Actual Output</strong>.</p>
-    </div>,
-  },
-  {
-    title: "4. Accounting Entries",
-    content: <p>To record depreciation: <strong className="text-indigo-200">Dr Depreciation (Expense)</strong> | <strong className="text-indigo-200">Cr Accumulated Depreciation (Contra-asset)</strong>.<br/>To transfer at year-end: <strong className="text-indigo-200">Dr Profit & Loss</strong> | <strong className="text-indigo-200">Cr Depreciation</strong>.</p>,
-  },
-  {
-    title: "5. Disposal of Non-Current Assets",
-    content: <div className="space-y-1">
-      <p>Steps to dispose:</p>
-      <p>1. Transfer cost: <strong className="text-indigo-200">Dr Disposal | Cr Non-current Asset</strong></p>
-      <p>2. Transfer accumulated dep: <strong className="text-indigo-200">Dr Accumulated Dep | Cr Disposal</strong></p>
-      <p>3. Record proceeds: <strong className="text-indigo-200">Dr Cash/Bank | Cr Disposal</strong></p>
-      <p>4. Balance is <strong className="text-green-400">Gain (Cr Disposal)</strong> or <strong className="text-red-400">Loss (Dr Disposal)</strong>.</p>
-    </div>,
-  }
-];
-
-const MIND_MAP_DATA = {
-  id: 'root',
-  label: 'Depreciation of Non-Current Assets',
-  children: [
-    {
-      id: 'expenditure',
-      label: '1. Types of Expenditure',
-      children: [
-        { id: 'cap-exp', label: 'Capital Expenditure (Long-term, Asset)', children: [{ id: 'ce-ex', label: 'Purchase price, Installation, Freight, Initial testing' }] },
-        { id: 'rev-exp', label: 'Revenue Expenditure (Short-term, Expense)', children: [{ id: 're-ex', label: 'Regular repairs, Fuel, Wages, Maintenance' }] }
-      ]
-    },
-    {
-      id: 'methods',
-      label: '2. Depreciation Methods',
-      children: [
-        { id: 'sl', label: 'Straight-Line Method', children: [{ id: 'sl-f', label: '(Cost - Residual) / Useful Life' }] },
-        { id: 'rb', label: 'Reducing-Balance Method', children: [{ id: 'rb-f', label: 'Net Book Value × Fixed %' }] },
-        { id: 'ub', label: 'Usage-Based Method', children: [{ id: 'ub-f', label: 'Rate per unit × Actual Output' }] }
-      ]
-    },
-    {
-      id: 'entries',
-      label: '3. Accounting Entries',
-      children: [
-        { id: 'ae-1', label: 'Charge: Dr Depreciation, Cr Accumulated Depreciation' },
-        { id: 'ae-2', label: 'Transfer: Dr Profit & Loss, Cr Depreciation' },
-        { id: 'ae-3', label: 'Net Book Value (NBV) = Cost - Accumulated Depreciation' }
-      ]
-    },
-    {
-      id: 'disposal',
-      label: '4. Disposal & Trade-in',
-      children: [
-        { id: 'disp-1', label: 'Dr Disposal, Cr Asset (Transfer Cost)' },
-        { id: 'disp-2', label: 'Dr Accum. Dep, Cr Disposal (Transfer Dep.)' },
-        { id: 'disp-3', label: 'Dr Bank/Cash, Cr Disposal (Proceeds)' },
-        { id: 'disp-4', label: 'Balance = Gain or Loss on Disposal' }
-      ]
-    }
-  ]
-};
-
-const VIDEOS_DATA = [
-  { title: "Video 1", url: "https://youtu.be/neiDD6-_csM?si=-URXljF4VH3rcfy0" },
-  { title: "Video 2", url: "https://youtu.be/-dRO_ACAxH4?si=f8iS8kwy4nOHe_5Q" },
-  { title: "Video 3", url: "https://youtu.be/ileKzYY8m00?si=DVSQD4XWgvNwIHAN" },
-  { title: "Video 4", url: "https://youtu.be/a-D5EvJ_rQo?si=yspiEBo4uGBc17za" },
-  { title: "Video 5", url: "https://youtu.be/ulmlcSNyR7w?si=a2M_jbSDB1_8Yiyd" },
-  { title: "Video 6", url: "https://youtu.be/5PQ8eW5EWpw?si=WAq3Olh4unoLyB0t" },
-  { title: "Video 7", url: "https://youtu.be/BCBpSTD2oAQ?si=Q7jMybPcQ1PBZcDI" },
-  { title: "Video 8", url: "https://youtu.be/w1kD7DGbdo4?si=ESbO24P6NJ6XHYvT" },
-  { title: "Video 9", url: "https://youtu.be/ndMPuMRusEs?si=wdyrVCPxl2nVLLdV" },
-  { title: "Video 10", url: "https://youtu.be/eP7B4v_4cdc?si=9fm_pnkSRAcGHIg7" },
-  { title: "Video 11", url: "https://youtu.be/BCBpSTD2oAQ?si=EhVHdxm1k9xHIc3K" },
-  { title: "Video 12", url: "https://youtu.be/NnBvXqWg8xw?si=p8_X0V6KNZ5wnWQ2" }
-];
-
-// --- UTILS FOR QUESTION GENERATOR ---
-
-const formatCurrency = (num) => `$${num.toLocaleString()}`;
-
-const generateQuestion = () => {
-  const types = ['classification', 'straight-line', 'reducing-balance', 'entries', 'nbv'];
-  const type = types[Math.floor(Math.random() * types.length)];
-
-  let question, options, answerIndex, explanation;
-
-  if (type === 'classification') {
-    const items = [
-      { name: "Purchase price of a new delivery van", type: "Capital" },
-      { name: "Freight charges for delivering a new machine", type: "Capital" },
-      { name: "Installation cost of a new factory plant", type: "Capital" },
-      { name: "Engine repair on a second-hand van BEFORE it is ready for use", type: "Capital" },
-      { name: "Annual motor vehicle license fee", type: "Revenue" },
-      { name: "Monthly wages for the machine operator", type: "Revenue" },
-      { name: "Regular maintenance of office equipment", type: "Revenue" },
-      { name: "Petrol costs for the delivery van", type: "Revenue" }
-    ];
-    const item = items[Math.floor(Math.random() * items.length)];
-    question = `Is the following considered Capital Expenditure or Revenue Expenditure?\n\n"${item.name}"`;
-    options = ["Capital Expenditure", "Revenue Expenditure", "Neither", "Both"];
-    answerIndex = item.type === "Capital" ? 0 : 1;
-    explanation = item.type === "Capital" 
-      ? "Capital expenditures are costs incurred to acquire a non-current asset or bring it to its intended working condition."
-      : "Revenue expenditures are day-to-day operational costs that provide short-term benefits and are expensed immediately.";
-
-  } else if (type === 'straight-line') {
-    const cost = Math.floor(Math.random() * 9 + 2) * 10000; // 20k to 100k
-    const residual = Math.floor(Math.random() * 5 + 1) * 1000; // 1k to 5k
-    const life = Math.floor(Math.random() * 4 + 4); // 4 to 7 years
-    const dep = (cost - residual) / life;
-    
-    question = `A company buys a machine for ${formatCurrency(cost)}. Its estimated useful life is ${life} years, with a residual value of ${formatCurrency(residual)}. What is the annual depreciation charge using the Straight-Line Method?`;
-    
-    const correct = dep;
-    const w1 = cost / life; // forgot residual
-    const w2 = (cost - residual) / (life + 1);
-    const w3 = (cost + residual) / life;
-    
-    const rawOptions = [correct, w1, w2, w3].map(Math.round);
-    const shuffled = rawOptions.sort(() => Math.random() - 0.5);
-    options = shuffled.map(o => formatCurrency(o));
-    answerIndex = shuffled.indexOf(Math.round(correct));
-    explanation = `Formula: (Cost - Residual) / Useful Life.\n(${formatCurrency(cost)} - ${formatCurrency(residual)}) / ${life} = ${formatCurrency(dep)}`;
-
-  } else if (type === 'reducing-balance') {
-    const cost = Math.floor(Math.random() * 5 + 5) * 10000; // 50k to 90k
-    const rate = [10, 20, 25, 40][Math.floor(Math.random() * 4)];
-    const year = Math.floor(Math.random() * 2 + 2); // Year 2 or 3
-    
-    const y1Dep = cost * (rate / 100);
-    const nbv1 = cost - y1Dep;
-    const y2Dep = nbv1 * (rate / 100);
-    const nbv2 = nbv1 - y2Dep;
-    const y3Dep = nbv2 * (rate / 100);
-    
-    const correct = year === 2 ? y2Dep : y3Dep;
-    
-    question = `A motor vehicle is purchased for ${formatCurrency(cost)}. Depreciation is charged at ${rate}% per annum using the Reducing-Balance Method. What is the depreciation charge for Year ${year}?`;
-    
-    const w1 = cost * (rate / 100); // straight line mistake
-    const w2 = year === 2 ? nbv1 : nbv2; // gave NBV instead of charge
-    const w3 = correct * 1.5;
-    
-    const rawOptions = [correct, w1, w2, w3].map(Math.round);
-    const shuffled = rawOptions.sort(() => Math.random() - 0.5);
-    options = shuffled.map(o => formatCurrency(o));
-    answerIndex = shuffled.indexOf(Math.round(correct));
-    
-    explanation = year === 2 
-      ? `Year 1 Dep: ${formatCurrency(cost)} × ${rate}% = ${formatCurrency(y1Dep)}.\nYear 1 NBV: ${formatCurrency(nbv1)}.\nYear 2 Dep: ${formatCurrency(nbv1)} × ${rate}% = ${formatCurrency(y2Dep)}.`
-      : `Year 1 NBV: ${formatCurrency(nbv1)}.\nYear 2 NBV: ${formatCurrency(nbv2)}.\nYear 3 Dep: ${formatCurrency(nbv2)} × ${rate}% = ${formatCurrency(y3Dep)}.`;
-
-  } else if (type === 'entries') {
-    question = "Which of the following is the correct double entry to record the annual depreciation charge for machinery?";
-    const correctStr = "Dr Depreciation, Cr Accumulated Depreciation - Machinery";
-    options = [
-      correctStr,
-      "Dr Machinery, Cr Depreciation",
-      "Dr Accumulated Depreciation - Machinery, Cr Depreciation",
-      "Dr Profit & Loss, Cr Machinery"
-    ];
-    const shuffled = options.sort(() => Math.random() - 0.5);
-    options = shuffled;
-    answerIndex = shuffled.indexOf(correctStr);
-    explanation = "Depreciation is an expense (Debit) and it increases the contra-asset account Accumulated Depreciation (Credit). The asset's cost account remains unchanged.";
-  } else {
-    // NBV question
-    const cost = Math.floor(Math.random() * 8 + 2) * 10000;
-    const accumDep = Math.floor(Math.random() * (cost * 0.8));
-    question = `An asset has a cost of ${formatCurrency(cost)} and an accumulated depreciation of ${formatCurrency(accumDep)}. What is its Net Book Value (NBV)?`;
-    const correct = cost - accumDep;
-    const rawOptions = [correct, cost + accumDep, accumDep, cost];
-    const shuffled = rawOptions.sort(() => Math.random() - 0.5);
-    options = shuffled.map(o => formatCurrency(o));
-    answerIndex = shuffled.indexOf(correct);
-    explanation = `Net Book Value (NBV) = Cost - Accumulated Depreciation.\n${formatCurrency(cost)} - ${formatCurrency(accumDep)} = ${formatCurrency(correct)}`;
-  }
-
-  return { question, options, answerIndex, explanation };
-};
-
-// --- COMPONENTS ---
-
-const MindMapNode = ({ node, defaultExpanded = false }) => {
-  const [expanded, setExpanded] = useState(defaultExpanded);
-  const hasChildren = node.children && node.children.length > 0;
-
-  return (
-    <div className="ml-4 mt-2">
-      <div 
-        className={`flex items-center p-3 rounded-lg border ${hasChildren ? 'cursor-pointer hover:bg-slate-800 border-slate-700 bg-slate-800/50' : 'bg-slate-900 border-slate-800'} transition-colors`}
-        onClick={() => hasChildren && setExpanded(!expanded)}
-      >
-        {hasChildren && (
-          <span className="mr-2 text-indigo-400">
-            {expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-          </span>
-        )}
-        {!hasChildren && <span className="w-6" />}
-        <span className="text-slate-200 font-medium">{node.label}</span>
-      </div>
-      
-      {hasChildren && expanded && (
-        <div className="border-l-2 border-slate-700 ml-4 pl-2 mt-2">
-          {node.children.map(child => (
-            <MindMapNode key={child.id} node={child} defaultExpanded={false} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// --- MAIN APP ---
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState('summary');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HKDSE BAFS Hub</title>
   
-  // Quiz State
-  const [currentQuiz, setCurrentQuiz] = useState(null);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [score, setScore] = useState({ correct: 0, total: 0 });
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons (Replacing lucide-react so it works offline) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- React & ReactDOM (Loaded directly in the browser) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone (Compiles JSX into regular JS on the fly) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-indigo-500/30">
+  
+  <div id="root"></div>
 
-  useEffect(() => {
-    if (!currentQuiz) {
-      setCurrentQuiz(generateQuestion());
-    }
-  }, [currentQuiz]);
+  <script type="text/babel">
+    const { useState, useEffect } = React;
 
-  const handleAnswerSelect = (index) => {
-    if (selectedAnswer !== null) return; // Prevent double clicking
-    setSelectedAnswer(index);
-    if (index === currentQuiz.answerIndex) {
-      setScore(s => ({ ...s, correct: s.correct + 1, total: s.total + 1 }));
-    } else {
-      setScore(s => ({ ...s, total: s.total + 1 }));
-    }
-  };
+    // --- DATA & CONTENT ---
 
-  const nextQuestion = () => {
-    setSelectedAnswer(null);
-    setCurrentQuiz(generateQuestion());
-  };
+    const SUMMARY_CONTENT = [
+      {
+        title: "1. Introduction to Depreciation",
+        content: <p>Non-current assets provide <strong className="text-indigo-200">long-term benefits</strong> (&gt;1 accounting period). Under <strong className="text-indigo-200">accrual accounting</strong>, the cost is not fully expensed in the acquisition year. Instead, it is allocated via <strong className="text-indigo-200">depreciation</strong> over its useful life. Applies only to <strong className="text-indigo-200">tangible assets</strong>.</p>,
+      },
+      {
+        title: "2. Capital vs. Revenue Expenditure",
+        content: <p><strong className="text-indigo-200">Capital Expenditure</strong> provides long-term benefits and is <strong className="text-indigo-200">capitalized</strong> (recorded as an asset). It includes the <strong className="text-indigo-200">purchase price and directly attributable costs</strong> (freight, installation, testing). <strong className="text-indigo-200">Revenue Expenditure</strong> provides short-term benefits (day-to-day ops) like rent, wages, and regular repairs. <strong className="text-red-300">Exception:</strong> Repairs required before an asset is ready for use are capitalized.</p>,
+      },
+      {
+        title: "3. Commonly Used Depreciation Methods",
+        content: <div className="space-y-2">
+          <p>1. <strong className="text-indigo-200">Straight-Line:</strong> Constant charge each period. Formula: <strong className="text-indigo-200">(Cost - Residual Value) / Useful Life</strong>.</p>
+          <p>2. <strong className="text-indigo-200">Reducing-Balance:</strong> Diminishing charge. Formula: <strong className="text-indigo-200">Net Book Value (NBV) × Fixed % Rate</strong>.</p>
+          <p>3. <strong className="text-indigo-200">Usage-Based:</strong> Varies with output. Formula: <strong className="text-indigo-200">[(Cost - Residual) / Total Estimated Output] × Actual Output</strong>.</p>
+        </div>,
+      },
+      {
+        title: "4. Accounting Entries",
+        content: <p>To record depreciation: <strong className="text-indigo-200">Dr Depreciation (Expense)</strong> | <strong className="text-indigo-200">Cr Accumulated Depreciation (Contra-asset)</strong>.<br/>To transfer at year-end: <strong className="text-indigo-200">Dr Profit & Loss</strong> | <strong className="text-indigo-200">Cr Depreciation</strong>.</p>,
+      },
+      {
+        title: "5. Disposal of Non-Current Assets",
+        content: <div className="space-y-1">
+          <p>Steps to dispose:</p>
+          <p>1. Transfer cost: <strong className="text-indigo-200">Dr Disposal | Cr Non-current Asset</strong></p>
+          <p>2. Transfer accumulated dep: <strong className="text-indigo-200">Dr Accumulated Dep | Cr Disposal</strong></p>
+          <p>3. Record proceeds: <strong className="text-indigo-200">Dr Cash/Bank | Cr Disposal</strong></p>
+          <p>4. Balance is <strong className="text-green-400">Gain (Cr Disposal)</strong> or <strong className="text-red-400">Loss (Dr Disposal)</strong>.</p>
+        </div>,
+      }
+    ];
 
-  const navItems = [
-    { id: 'summary', label: 'Summary', icon: FileText },
-    { id: 'mindmap', label: 'Mind Map', icon: Network },
-    { id: 'videos', label: 'Videos', icon: Video },
-    { id: 'practice', label: 'Practice', icon: BrainCircuit },
-  ];
+    const MIND_MAP_DATA = {
+      id: 'root',
+      label: 'Depreciation of Non-Current Assets',
+      children: [
+        {
+          id: 'expenditure',
+          label: '1. Types of Expenditure',
+          children: [
+            { id: 'cap-exp', label: 'Capital Expenditure (Long-term, Asset)', children: [{ id: 'ce-ex', label: 'Purchase price, Installation, Freight, Initial testing' }] },
+            { id: 'rev-exp', label: 'Revenue Expenditure (Short-term, Expense)', children: [{ id: 're-ex', label: 'Regular repairs, Fuel, Wages, Maintenance' }] }
+          ]
+        },
+        {
+          id: 'methods',
+          label: '2. Depreciation Methods',
+          children: [
+            { id: 'sl', label: 'Straight-Line Method', children: [{ id: 'sl-f', label: '(Cost - Residual) / Useful Life' }] },
+            { id: 'rb', label: 'Reducing-Balance Method', children: [{ id: 'rb-f', label: 'Net Book Value × Fixed %' }] },
+            { id: 'ub', label: 'Usage-Based Method', children: [{ id: 'ub-f', label: 'Rate per unit × Actual Output' }] }
+          ]
+        },
+        {
+          id: 'entries',
+          label: '3. Accounting Entries',
+          children: [
+            { id: 'ae-1', label: 'Charge: Dr Depreciation, Cr Accumulated Depreciation' },
+            { id: 'ae-2', label: 'Transfer: Dr Profit & Loss, Cr Depreciation' },
+            { id: 'ae-3', label: 'Net Book Value (NBV) = Cost - Accumulated Depreciation' }
+          ]
+        },
+        {
+          id: 'disposal',
+          label: '4. Disposal & Trade-in',
+          children: [
+            { id: 'disp-1', label: 'Dr Disposal, Cr Asset (Transfer Cost)' },
+            { id: 'disp-2', label: 'Dr Accum. Dep, Cr Disposal (Transfer Dep.)' },
+            { id: 'disp-3', label: 'Dr Bank/Cash, Cr Disposal (Proceeds)' },
+            { id: 'disp-4', label: 'Balance = Gain or Loss on Disposal' }
+          ]
+        }
+      ]
+    };
 
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-300 font-sans selection:bg-indigo-500/30">
-      {/* Header */}
-      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between">
-          <div className="flex items-center gap-3 mb-4 md:mb-0">
-            <div className="p-2 bg-indigo-600 rounded-lg">
-              <Calculator size={24} className="text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white tracking-tight">HKDSE BAFS Hub</h1>
-              <p className="text-xs text-slate-400">Chapter 11: Depreciation of Non-Current Assets</p>
-            </div>
+    const VIDEOS_DATA = [
+      { title: "Video 1", url: "https://youtu.be/neiDD6-_csM?si=-URXljF4VH3rcfy0" },
+      { title: "Video 2", url: "https://youtu.be/-dRO_ACAxH4?si=f8iS8kwy4nOHe_5Q" },
+      { title: "Video 3", url: "https://youtu.be/ileKzYY8m00?si=DVSQD4XWgvNwIHAN" },
+      { title: "Video 4", url: "https://youtu.be/a-D5EvJ_rQo?si=yspiEBo4uGBc17za" },
+      { title: "Video 5", url: "https://youtu.be/ulmlcSNyR7w?si=a2M_jbSDB1_8Yiyd" },
+      { title: "Video 6", url: "https://youtu.be/5PQ8eW5EWpw?si=WAq3Olh4unoLyB0t" },
+      { title: "Video 7", url: "https://youtu.be/BCBpSTD2oAQ?si=Q7jMybPcQ1PBZcDI" },
+      { title: "Video 8", url: "https://youtu.be/w1kD7DGbdo4?si=ESbO24P6NJ6XHYvT" },
+      { title: "Video 9", url: "https://youtu.be/ndMPuMRusEs?si=wdyrVCPxl2nVLLdV" },
+      { title: "Video 10", url: "https://youtu.be/eP7B4v_4cdc?si=9fm_pnkSRAcGHIg7" },
+      { title: "Video 11", url: "https://youtu.be/BCBpSTD2oAQ?si=EhVHdxm1k9xHIc3K" },
+      { title: "Video 12", url: "https://youtu.be/NnBvXqWg8xw?si=p8_X0V6KNZ5wnWQ2" }
+    ];
+
+    // --- UTILS FOR QUESTION GENERATOR ---
+
+    const formatCurrency = (num) => `$${num.toLocaleString()}`;
+
+    const generateQuestion = () => {
+      const types = ['classification', 'straight-line', 'reducing-balance', 'entries', 'nbv'];
+      const type = types[Math.floor(Math.random() * types.length)];
+
+      let question, options, answerIndex, explanation;
+
+      if (type === 'classification') {
+        const items = [
+          { name: "Purchase price of a new delivery van", type: "Capital" },
+          { name: "Freight charges for delivering a new machine", type: "Capital" },
+          { name: "Installation cost of a new factory plant", type: "Capital" },
+          { name: "Engine repair on a second-hand van BEFORE it is ready for use", type: "Capital" },
+          { name: "Annual motor vehicle license fee", type: "Revenue" },
+          { name: "Monthly wages for the machine operator", type: "Revenue" },
+          { name: "Regular maintenance of office equipment", type: "Revenue" },
+          { name: "Petrol costs for the delivery van", type: "Revenue" }
+        ];
+        const item = items[Math.floor(Math.random() * items.length)];
+        question = `Is the following considered Capital Expenditure or Revenue Expenditure?\n\n"${item.name}"`;
+        options = ["Capital Expenditure", "Revenue Expenditure", "Neither", "Both"];
+        answerIndex = item.type === "Capital" ? 0 : 1;
+        explanation = item.type === "Capital" 
+          ? "Capital expenditures are costs incurred to acquire a non-current asset or bring it to its intended working condition."
+          : "Revenue expenditures are day-to-day operational costs that provide short-term benefits and are expensed immediately.";
+
+      } else if (type === 'straight-line') {
+        const cost = Math.floor(Math.random() * 9 + 2) * 10000;
+        const residual = Math.floor(Math.random() * 5 + 1) * 1000;
+        const life = Math.floor(Math.random() * 4 + 4);
+        const dep = (cost - residual) / life;
+        
+        question = `A company buys a machine for ${formatCurrency(cost)}. Its estimated useful life is ${life} years, with a residual value of ${formatCurrency(residual)}. What is the annual depreciation charge using the Straight-Line Method?`;
+        
+        const correct = dep;
+        const w1 = cost / life; 
+        const w2 = (cost - residual) / (life + 1);
+        const w3 = (cost + residual) / life;
+        
+        const rawOptions = [correct, w1, w2, w3].map(Math.round);
+        const shuffled = rawOptions.sort(() => Math.random() - 0.5);
+        options = shuffled.map(o => formatCurrency(o));
+        answerIndex = shuffled.indexOf(Math.round(correct));
+        explanation = `Formula: (Cost - Residual) / Useful Life.\n(${formatCurrency(cost)} - ${formatCurrency(residual)}) / ${life} = ${formatCurrency(dep)}`;
+
+      } else if (type === 'reducing-balance') {
+        const cost = Math.floor(Math.random() * 5 + 5) * 10000;
+        const rate = [10, 20, 25, 40][Math.floor(Math.random() * 4)];
+        const year = Math.floor(Math.random() * 2 + 2); 
+        
+        const y1Dep = cost * (rate / 100);
+        const nbv1 = cost - y1Dep;
+        const y2Dep = nbv1 * (rate / 100);
+        const nbv2 = nbv1 - y2Dep;
+        const y3Dep = nbv2 * (rate / 100);
+        
+        const correct = year === 2 ? y2Dep : y3Dep;
+        
+        question = `A motor vehicle is purchased for ${formatCurrency(cost)}. Depreciation is charged at ${rate}% per annum using the Reducing-Balance Method. What is the depreciation charge for Year ${year}?`;
+        
+        const w1 = cost * (rate / 100); 
+        const w2 = year === 2 ? nbv1 : nbv2; 
+        const w3 = correct * 1.5;
+        
+        const rawOptions = [correct, w1, w2, w3].map(Math.round);
+        const shuffled = rawOptions.sort(() => Math.random() - 0.5);
+        options = shuffled.map(o => formatCurrency(o));
+        answerIndex = shuffled.indexOf(Math.round(correct));
+        
+        explanation = year === 2 
+          ? `Year 1 Dep: ${formatCurrency(cost)} × ${rate}% = ${formatCurrency(y1Dep)}.\nYear 1 NBV: ${formatCurrency(nbv1)}.\nYear 2 Dep: ${formatCurrency(nbv1)} × ${rate}% = ${formatCurrency(y2Dep)}.`
+          : `Year 1 NBV: ${formatCurrency(nbv1)}.\nYear 2 NBV: ${formatCurrency(nbv2)}.\nYear 3 Dep: ${formatCurrency(nbv2)} × ${rate}% = ${formatCurrency(y3Dep)}.`;
+
+      } else if (type === 'entries') {
+        question = "Which of the following is the correct double entry to record the annual depreciation charge for machinery?";
+        const correctStr = "Dr Depreciation, Cr Accumulated Depreciation - Machinery";
+        options = [
+          correctStr,
+          "Dr Machinery, Cr Depreciation",
+          "Dr Accumulated Depreciation - Machinery, Cr Depreciation",
+          "Dr Profit & Loss, Cr Machinery"
+        ];
+        const shuffled = options.sort(() => Math.random() - 0.5);
+        options = shuffled;
+        answerIndex = shuffled.indexOf(correctStr);
+        explanation = "Depreciation is an expense (Debit) and it increases the contra-asset account Accumulated Depreciation (Credit). The asset's cost account remains unchanged.";
+      } else {
+        const cost = Math.floor(Math.random() * 8 + 2) * 10000;
+        const accumDep = Math.floor(Math.random() * (cost * 0.8));
+        question = `An asset has a cost of ${formatCurrency(cost)} and an accumulated depreciation of ${formatCurrency(accumDep)}. What is its Net Book Value (NBV)?`;
+        const correct = cost - accumDep;
+        const rawOptions = [correct, cost + accumDep, accumDep, cost];
+        const shuffled = rawOptions.sort(() => Math.random() - 0.5);
+        options = shuffled.map(o => formatCurrency(o));
+        answerIndex = shuffled.indexOf(correct);
+        explanation = `Net Book Value (NBV) = Cost - Accumulated Depreciation.\n${formatCurrency(cost)} - ${formatCurrency(accumDep)} = ${formatCurrency(correct)}`;
+      }
+
+      return { question, options, answerIndex, explanation };
+    };
+
+    // --- COMPONENTS ---
+
+    const MindMapNode = ({ node, defaultExpanded = false }) => {
+      const [expanded, setExpanded] = useState(defaultExpanded);
+      const hasChildren = node.children && node.children.length > 0;
+
+      return (
+        <div className="ml-4 mt-2">
+          <div 
+            className={`flex items-center p-3 rounded-lg border ${hasChildren ? 'cursor-pointer hover:bg-slate-800 border-slate-700 bg-slate-800/50' : 'bg-slate-900 border-slate-800'} transition-colors`}
+            onClick={() => hasChildren && setExpanded(!expanded)}
+          >
+            {hasChildren && (
+              <span className="mr-3 text-indigo-400 w-4 text-center">
+                {expanded ? <i className="fa-solid fa-chevron-down text-sm"></i> : <i className="fa-solid fa-chevron-right text-sm"></i>}
+              </span>
+            )}
+            {!hasChildren && <span className="w-6" />}
+            <span className="text-slate-200 font-medium">{node.label}</span>
           </div>
           
-          <nav className="flex gap-1 bg-slate-950 p-1 rounded-xl overflow-x-auto max-w-full">
-            {navItems.map(item => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                  activeTab === item.id 
-                    ? 'bg-indigo-600 text-white shadow-lg' 
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-                }`}
-              >
-                <item.icon size={16} />
-                {item.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        
-        {/* SUMMARY VIEW */}
-        {activeTab === 'summary' && (
-          <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                <BookOpen className="text-indigo-400" />
-                Chapter Digest
-              </h2>
-              
-              <div className="grid gap-6 md:grid-cols-2">
-                {SUMMARY_CONTENT.map((section, idx) => (
-                  <div key={idx} className="bg-slate-950 p-6 rounded-xl border border-slate-800/50">
-                    <h3 className="text-lg font-bold text-indigo-300 mb-3">{section.title}</h3>
-                    <div className="text-slate-400 leading-relaxed text-sm">
-                      {section.content}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-8 bg-indigo-950/30 border border-indigo-500/20 p-6 rounded-xl">
-                <h3 className="text-lg font-bold text-indigo-300 mb-4">Core Formulas</h3>
-                <div className="grid gap-4 md:grid-cols-2 text-sm">
-                  <div className="bg-slate-900 p-4 rounded-lg flex flex-col justify-center items-center text-center">
-                    <span className="text-slate-400 mb-2 font-medium">Straight-Line Method</span>
-                    <div className="font-mono text-indigo-200 bg-slate-950 px-4 py-2 rounded border border-slate-800">
-                      <div className="border-b border-indigo-500/50 pb-1 mb-1">Cost - Residual Value</div>
-                      <div>Estimated Useful Life</div>
-                    </div>
-                  </div>
-                  <div className="bg-slate-900 p-4 rounded-lg flex flex-col justify-center items-center text-center">
-                    <span className="text-slate-400 mb-2 font-medium">Reducing-Balance Method</span>
-                    <div className="font-mono text-indigo-200 bg-slate-950 px-4 py-2 rounded border border-slate-800">
-                      Net Book Value × Fixed %
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* MIND MAP VIEW */}
-        {activeTab === 'mindmap' && (
-          <div className="animate-in fade-in duration-500">
-            <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl min-h-[60vh]">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                <Network className="text-indigo-400" />
-                Interactive Concept Map
-              </h2>
-              <p className="text-slate-400 mb-8 text-sm">Click on nodes with arrows to expand or collapse concepts.</p>
-              
-              <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 overflow-x-auto">
-                <MindMapNode node={MIND_MAP_DATA} defaultExpanded={true} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* VIDEOS VIEW */}
-        {activeTab === 'videos' && (
-          <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-              <Video className="text-indigo-400" />
-              Curated Video Tutorials
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {VIDEOS_DATA.map((video, index) => (
-                <div key={index} className="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg flex flex-col justify-between gap-4 hover:border-indigo-500/40 transition-colors">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-slate-800 text-indigo-400 font-bold rounded-full w-8 h-8 flex items-center justify-center shrink-0">
-                      {index + 1}
-                    </div>
-                    <h3 className="text-slate-200 font-medium leading-snug mt-1">
-                      {video.title}
-                    </h3>
-                  </div>
-                  <a 
-                    href={video.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="mt-auto inline-flex items-center justify-center gap-2 w-full py-2.5 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 rounded-lg font-medium transition-colors border border-indigo-500/20"
-                  >
-                    <ExternalLink size={16} />
-                    Watch Video
-                  </a>
-                </div>
+          {hasChildren && expanded && (
+            <div className="border-l-2 border-slate-700 ml-4 pl-2 mt-2">
+              {node.children.map(child => (
+                <MindMapNode key={child.id} node={child} defaultExpanded={false} />
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      );
+    };
 
-        {/* PRACTICE VIEW */}
-        {activeTab === 'practice' && currentQuiz && (
-          <div className="animate-in fade-in duration-500 max-w-3xl mx-auto">
-            <div className="flex justify-between items-end mb-6">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <BrainCircuit className="text-indigo-400" />
-                Infinite Practice
-              </h2>
-              <div className="bg-slate-900 px-4 py-2 rounded-lg border border-slate-800 text-sm">
-                Score: <span className="text-indigo-400 font-bold">{score.correct}</span> / {score.total}
-              </div>
-            </div>
+    // --- MAIN APP ---
 
-            <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl">
-              <div className="mb-8">
-                <h3 className="text-lg text-slate-200 whitespace-pre-wrap leading-relaxed">
-                  {currentQuiz.question}
-                </h3>
-              </div>
+    function App() {
+      const [activeTab, setActiveTab] = useState('summary');
+      
+      const [currentQuiz, setCurrentQuiz] = useState(null);
+      const [selectedAnswer, setSelectedAnswer] = useState(null);
+      const [score, setScore] = useState({ correct: 0, total: 0 });
 
-              <div className="space-y-3">
-                {currentQuiz.options.map((option, idx) => {
-                  const isSelected = selectedAnswer === idx;
-                  const isCorrect = currentQuiz.answerIndex === idx;
-                  const showCorrect = selectedAnswer !== null && isCorrect;
-                  const showWrong = isSelected && !isCorrect;
+      useEffect(() => {
+        if (!currentQuiz) {
+          setCurrentQuiz(generateQuestion());
+        }
+      }, [currentQuiz]);
 
-                  let baseClasses = "w-full text-left p-4 rounded-xl border transition-all duration-200 flex justify-between items-center ";
-                  
-                  if (selectedAnswer === null) {
-                    baseClasses += "bg-slate-950 border-slate-800 hover:border-indigo-500 hover:bg-slate-900 text-slate-300";
-                  } else if (showCorrect) {
-                    baseClasses += "bg-green-950/40 border-green-500 text-green-200";
-                  } else if (showWrong) {
-                    baseClasses += "bg-red-950/40 border-red-500 text-red-200";
-                  } else {
-                    baseClasses += "bg-slate-950 border-slate-800 text-slate-500 opacity-50";
-                  }
+      const handleAnswerSelect = (index) => {
+        if (selectedAnswer !== null) return; 
+        setSelectedAnswer(index);
+        if (index === currentQuiz.answerIndex) {
+          setScore(s => ({ ...s, correct: s.correct + 1, total: s.total + 1 }));
+        } else {
+          setScore(s => ({ ...s, total: s.total + 1 }));
+        }
+      };
 
-                  return (
-                    <button
-                      key={idx}
-                      disabled={selectedAnswer !== null}
-                      onClick={() => handleAnswerSelect(idx)}
-                      className={baseClasses}
-                    >
-                      <span>{option}</span>
-                      {showCorrect && <CheckCircle2 className="text-green-500" size={20} />}
-                      {showWrong && <XCircle className="text-red-500" size={20} />}
-                    </button>
-                  );
-                })}
-              </div>
+      const nextQuestion = () => {
+        setSelectedAnswer(null);
+        setCurrentQuiz(generateQuestion());
+      };
 
-              {selectedAnswer !== null && (
-                <div className="mt-8 p-5 bg-slate-950 rounded-xl border border-slate-800 animate-in slide-in-from-bottom-2">
-                  <h4 className="font-bold text-slate-300 mb-2 flex items-center gap-2">
-                    {selectedAnswer === currentQuiz.answerIndex 
-                      ? <span className="text-green-400">Correct!</span> 
-                      : <span className="text-red-400">Incorrect.</span>}
-                  </h4>
-                  <p className="text-slate-400 text-sm whitespace-pre-line mb-6">
-                    {currentQuiz.explanation}
-                  </p>
-                  
-                  <button
-                    onClick={nextQuestion}
-                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex justify-center items-center gap-2 shadow-lg shadow-indigo-900/20"
-                  >
-                    <RefreshCw size={18} />
-                    Generate Next Question
-                  </button>
+      const navItems = [
+        { id: 'summary', label: 'Summary', icon: 'fa-solid fa-file-lines' },
+        { id: 'mindmap', label: 'Mind Map', icon: 'fa-solid fa-network-wired' },
+        { id: 'videos', label: 'Videos', icon: 'fa-solid fa-video' },
+        { id: 'practice', label: 'Practice', icon: 'fa-solid fa-brain' },
+      ];
+
+      return (
+        <div className="min-h-screen bg-slate-950 text-slate-300 font-sans selection:bg-indigo-500/30 pb-16">
+          {/* Header */}
+          <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+            <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between">
+              <div className="flex items-center gap-3 mb-4 md:mb-0">
+                <div className="p-2 bg-indigo-600 rounded-lg flex items-center justify-center w-10 h-10">
+                  <i className="fa-solid fa-calculator text-white text-lg"></i>
                 </div>
-              )}
+                <div>
+                  <h1 className="text-xl font-bold text-white tracking-tight">HKDSE BAFS Hub</h1>
+                  <p className="text-xs text-slate-400">Chapter 11: Depreciation of Non-Current Assets</p>
+                </div>
+              </div>
+              
+              <nav className="flex gap-1 bg-slate-950 p-1 rounded-xl overflow-x-auto max-w-full">
+                {navItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                      activeTab === item.id 
+                        ? 'bg-indigo-600 text-white shadow-lg' 
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                    }`}
+                  >
+                    <i className={item.icon}></i>
+                    {item.label}
+                  </button>
+                ))}
+              </nav>
             </div>
-          </div>
-        )}
+          </header>
 
-      </main>
-    </div>
-  );
-}
+          {/* Main Content */}
+          <main className="max-w-6xl mx-auto px-4 py-8">
+            
+            {/* SUMMARY VIEW */}
+            {activeTab === 'summary' && (
+              <div className="space-y-8 animate-[fadeIn_0.5s_ease-out]">
+                <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl">
+                  <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                    <i className="fa-solid fa-book-open text-indigo-400"></i>
+                    Chapter Digest
+                  </h2>
+                  
+                  <div className="grid gap-6 md:grid-cols-2">
+                    {SUMMARY_CONTENT.map((section, idx) => (
+                      <div key={idx} className="bg-slate-950 p-6 rounded-xl border border-slate-800/50">
+                        <h3 className="text-lg font-bold text-indigo-300 mb-3">{section.title}</h3>
+                        <div className="text-slate-400 leading-relaxed text-sm">
+                          {section.content}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-8 bg-indigo-950/30 border border-indigo-500/20 p-6 rounded-xl">
+                    <h3 className="text-lg font-bold text-indigo-300 mb-4">Core Formulas</h3>
+                    <div className="grid gap-4 md:grid-cols-2 text-sm">
+                      <div className="bg-slate-900 p-4 rounded-lg flex flex-col justify-center items-center text-center">
+                        <span className="text-slate-400 mb-2 font-medium">Straight-Line Method</span>
+                        <div className="font-mono text-indigo-200 bg-slate-950 px-4 py-2 rounded border border-slate-800">
+                          <div className="border-b border-indigo-500/50 pb-1 mb-1">Cost - Residual Value</div>
+                          <div>Estimated Useful Life</div>
+                        </div>
+                      </div>
+                      <div className="bg-slate-900 p-4 rounded-lg flex flex-col justify-center items-center text-center">
+                        <span className="text-slate-400 mb-2 font-medium">Reducing-Balance Method</span>
+                        <div className="font-mono text-indigo-200 bg-slate-950 px-4 py-2 rounded border border-slate-800">
+                          Net Book Value × Fixed %
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* MIND MAP VIEW */}
+            {activeTab === 'mindmap' && (
+              <div className="animate-[fadeIn_0.5s_ease-out]">
+                <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl min-h-[60vh]">
+                  <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                    <i className="fa-solid fa-network-wired text-indigo-400"></i>
+                    Interactive Concept Map
+                  </h2>
+                  <p className="text-slate-400 mb-8 text-sm">Click on nodes with arrows to expand or collapse concepts.</p>
+                  
+                  <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 overflow-x-auto">
+                    <MindMapNode node={MIND_MAP_DATA} defaultExpanded={true} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* VIDEOS VIEW */}
+            {activeTab === 'videos' && (
+              <div className="animate-[fadeIn_0.5s_ease-out] max-w-4xl mx-auto">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                  <i className="fa-solid fa-video text-indigo-400"></i>
+                  Curated Video Tutorials
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {VIDEOS_DATA.map((video, index) => (
+                    <div key={index} className="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg flex flex-col justify-between gap-4 hover:border-indigo-500/40 transition-colors">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-slate-800 text-indigo-400 font-bold rounded-full w-8 h-8 flex items-center justify-center shrink-0">
+                          {index + 1}
+                        </div>
+                        <h3 className="text-slate-200 font-medium leading-snug mt-1">
+                          {video.title}
+                        </h3>
+                      </div>
+                      <a 
+                        href={video.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="mt-auto inline-flex items-center justify-center gap-2 w-full py-2.5 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 rounded-lg font-medium transition-colors border border-indigo-500/20"
+                      >
+                        <i className="fa-solid fa-arrow-up-right-from-square text-sm"></i>
+                        Watch Video
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* PRACTICE VIEW */}
+            {activeTab === 'practice' && currentQuiz && (
+              <div className="animate-[fadeIn_0.5s_ease-out] max-w-3xl mx-auto">
+                <div className="flex justify-between items-end mb-6">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                    <i className="fa-solid fa-brain text-indigo-400"></i>
+                    Infinite Practice
+                  </h2>
+                  <div className="bg-slate-900 px-4 py-2 rounded-lg border border-slate-800 text-sm">
+                    Score: <span className="text-indigo-400 font-bold">{score.correct}</span> / {score.total}
+                  </div>
+                </div>
+
+                <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl">
+                  <div className="mb-8">
+                    <h3 className="text-lg text-slate-200 whitespace-pre-wrap leading-relaxed">
+                      {currentQuiz.question}
+                    </h3>
+                  </div>
+
+                  <div className="space-y-3">
+                    {currentQuiz.options.map((option, idx) => {
+                      const isSelected = selectedAnswer === idx;
+                      const isCorrect = currentQuiz.answerIndex === idx;
+                      const showCorrect = selectedAnswer !== null && isCorrect;
+                      const showWrong = isSelected && !isCorrect;
+
+                      let baseClasses = "w-full text-left p-4 rounded-xl border transition-all duration-200 flex justify-between items-center ";
+                      
+                      if (selectedAnswer === null) {
+                        baseClasses += "bg-slate-950 border-slate-800 hover:border-indigo-500 hover:bg-slate-900 text-slate-300";
+                      } else if (showCorrect) {
+                        baseClasses += "bg-green-950/40 border-green-500 text-green-200";
+                      } else if (showWrong) {
+                        baseClasses += "bg-red-950/40 border-red-500 text-red-200";
+                      } else {
+                        baseClasses += "bg-slate-950 border-slate-800 text-slate-500 opacity-50";
+                      }
+
+                      return (
+                        <button
+                          key={idx}
+                          disabled={selectedAnswer !== null}
+                          onClick={() => handleAnswerSelect(idx)}
+                          className={baseClasses}
+                        >
+                          <span>{option}</span>
+                          {showCorrect && <i className="fa-solid fa-circle-check text-green-500 text-xl"></i>}
+                          {showWrong && <i className="fa-solid fa-circle-xmark text-red-500 text-xl"></i>}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {selectedAnswer !== null && (
+                    <div className="mt-8 p-5 bg-slate-950 rounded-xl border border-slate-800 animate-[slideUp_0.3s_ease-out]">
+                      <h4 className="font-bold text-slate-300 mb-2 flex items-center gap-2">
+                        {selectedAnswer === currentQuiz.answerIndex 
+                          ? <span className="text-green-400">Correct!</span> 
+                          : <span className="text-red-400">Incorrect.</span>}
+                      </h4>
+                      <p className="text-slate-400 text-sm whitespace-pre-line mb-6">
+                        {currentQuiz.explanation}
+                      </p>
+                      
+                      <button
+                        onClick={nextQuestion}
+                        className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex justify-center items-center gap-2 shadow-lg shadow-indigo-900/20"
+                      >
+                        <i className="fa-solid fa-rotate-right"></i>
+                        Generate Next Question
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+          </main>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+  
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</body>
+</html>
