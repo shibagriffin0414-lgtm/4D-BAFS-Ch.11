@@ -3,7 +3,6 @@ import {
   BookOpen, 
   Network, 
   Dumbbell, 
-  Youtube, 
   CheckCircle2, 
   XCircle, 
   ChevronRight, 
@@ -12,13 +11,6 @@ import {
   BookText, 
   ArrowRight
 } from 'lucide-react';
-
-// --- DATA: VIDEOS ---
-const VIDEO_LINKS = [
-  "neiDD6-_csM", "-dRO_ACAxH4", "ileKzYY8m00", "a-D5EvJ_rQo", 
-  "ulmlcSNyR7w", "5PQ8eW5EWpw", "BCBpSTD2oAQ", "w1kD7DGbdo4", 
-  "ndMPuMRusEs", "eP7B4v_4cdc", "BCBpSTD2oAQ", "NnBvXqWg8xw"
-];
 
 // --- DATA: MIND MAP ---
 const MIND_MAP_DATA = {
@@ -587,7 +579,6 @@ export default function App() {
               <TabButton active={activeTab === 'summary'} icon={BookOpen} label="Summary" onClick={() => setActiveTab('summary')} />
               <TabButton active={activeTab === 'mindmap'} icon={Network} label="Mind Map" onClick={() => setActiveTab('mindmap')} />
               <TabButton active={activeTab === 'practice'} icon={Calculator} label="Practice" onClick={() => setActiveTab('practice')} />
-              <TabButton active={activeTab === 'videos'} icon={Youtube} label="Videos" onClick={() => setActiveTab('videos')} />
             </nav>
           </div>
         </div>
@@ -598,7 +589,6 @@ export default function App() {
         {activeTab === 'summary' && <SummaryTab />}
         {activeTab === 'mindmap' && <MindMapTab />}
         {activeTab === 'practice' && <PracticeTab />}
-        {activeTab === 'videos' && <VideosTab />}
       </main>
 
       {/* Global CSS for animations */}
