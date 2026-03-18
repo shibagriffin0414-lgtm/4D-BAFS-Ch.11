@@ -16,36 +16,47 @@ import {
 
 // --- DATA & CONTENT ---
 
+// FIX: Changed static JSX to render functions to prevent "React is not defined" at module load
 const SUMMARY_CONTENT = [
   {
     title: "1. Introduction to Depreciation",
-    content: <p>Non-current assets provide <strong className="text-indigo-200">long-term benefits</strong> (&gt;1 accounting period). Under <strong className="text-indigo-200">accrual accounting</strong>, the cost is not fully expensed in the acquisition year. Instead, it is allocated via <strong className="text-indigo-200">depreciation</strong> over its useful life. Applies only to <strong className="text-indigo-200">tangible assets</strong>.</p>,
+    render: () => (
+      <p>Non-current assets provide <strong className="text-indigo-200">long-term benefits</strong> (&gt;1 accounting period). Under <strong className="text-indigo-200">accrual accounting</strong>, the cost is not fully expensed in the acquisition year. Instead, it is allocated via <strong className="text-indigo-200">depreciation</strong> over its useful life. Applies only to <strong className="text-indigo-200">tangible assets</strong>.</p>
+    ),
   },
   {
     title: "2. Capital vs. Revenue Expenditure",
-    content: <p><strong className="text-indigo-200">Capital Expenditure</strong> provides long-term benefits and is <strong className="text-indigo-200">capitalized</strong> (recorded as an asset). It includes the <strong className="text-indigo-200">purchase price and directly attributable costs</strong> (freight, installation, testing). <strong className="text-indigo-200">Revenue Expenditure</strong> provides short-term benefits (day-to-day ops) like rent, wages, and regular repairs. <strong className="text-red-300">Exception:</strong> Repairs required before an asset is ready for use are capitalized.</p>,
+    render: () => (
+      <p><strong className="text-indigo-200">Capital Expenditure</strong> provides long-term benefits and is <strong className="text-indigo-200">capitalized</strong> (recorded as an asset). It includes the <strong className="text-indigo-200">purchase price and directly attributable costs</strong> (freight, installation, testing). <strong className="text-indigo-200">Revenue Expenditure</strong> provides short-term benefits (day-to-day ops) like rent, wages, and regular repairs. <strong className="text-red-300">Exception:</strong> Repairs required before an asset is ready for use are capitalized.</p>
+    ),
   },
   {
     title: "3. Commonly Used Depreciation Methods",
-    content: <div className="space-y-2">
-      <p>1. <strong className="text-indigo-200">Straight-Line:</strong> Constant charge each period. Formula: <strong className="text-indigo-200">(Cost - Residual Value) / Useful Life</strong>.</p>
-      <p>2. <strong className="text-indigo-200">Reducing-Balance:</strong> Diminishing charge. Formula: <strong className="text-indigo-200">Net Book Value (NBV) × Fixed % Rate</strong>.</p>
-      <p>3. <strong className="text-indigo-200">Usage-Based:</strong> Varies with output. Formula: <strong className="text-indigo-200">[(Cost - Residual) / Total Estimated Output] × Actual Output</strong>.</p>
-    </div>,
+    render: () => (
+      <div className="space-y-2">
+        <p>1. <strong className="text-indigo-200">Straight-Line:</strong> Constant charge each period. Formula: <strong className="text-indigo-200">(Cost - Residual Value) / Useful Life</strong>.</p>
+        <p>2. <strong className="text-indigo-200">Reducing-Balance:</strong> Diminishing charge. Formula: <strong className="text-indigo-200">Net Book Value (NBV) × Fixed % Rate</strong>.</p>
+        <p>3. <strong className="text-indigo-200">Usage-Based:</strong> Varies with output. Formula: <strong className="text-indigo-200">[(Cost - Residual) / Total Estimated Output] × Actual Output</strong>.</p>
+      </div>
+    ),
   },
   {
     title: "4. Accounting Entries",
-    content: <p>To record depreciation: <strong className="text-indigo-200">Dr Depreciation (Expense)</strong> | <strong className="text-indigo-200">Cr Accumulated Depreciation (Contra-asset)</strong>.<br/>To transfer at year-end: <strong className="text-indigo-200">Dr Profit & Loss</strong> | <strong className="text-indigo-200">Cr Depreciation</strong>.</p>,
+    render: () => (
+      <p>To record depreciation: <strong className="text-indigo-200">Dr Depreciation (Expense)</strong> | <strong className="text-indigo-200">Cr Accumulated Depreciation (Contra-asset)</strong>.<br/>To transfer at year-end: <strong className="text-indigo-200">Dr Profit & Loss</strong> | <strong className="text-indigo-200">Cr Depreciation</strong>.</p>
+    ),
   },
   {
     title: "5. Disposal of Non-Current Assets",
-    content: <div className="space-y-1">
-      <p>Steps to dispose:</p>
-      <p>1. Transfer cost: <strong className="text-indigo-200">Dr Disposal | Cr Non-current Asset</strong></p>
-      <p>2. Transfer accumulated dep: <strong className="text-indigo-200">Dr Accumulated Dep | Cr Disposal</strong></p>
-      <p>3. Record proceeds: <strong className="text-indigo-200">Dr Cash/Bank | Cr Disposal</strong></p>
-      <p>4. Balance is <strong className="text-green-400">Gain (Cr Disposal)</strong> or <strong className="text-red-400">Loss (Dr Disposal)</strong>.</p>
-    </div>,
+    render: () => (
+      <div className="space-y-1">
+        <p>Steps to dispose:</p>
+        <p>1. Transfer cost: <strong className="text-indigo-200">Dr Disposal | Cr Non-current Asset</strong></p>
+        <p>2. Transfer accumulated dep: <strong className="text-indigo-200">Dr Accumulated Dep | Cr Disposal</strong></p>
+        <p>3. Record proceeds: <strong className="text-indigo-200">Dr Cash/Bank | Cr Disposal</strong></p>
+        <p>4. Balance is <strong className="text-green-400">Gain (Cr Disposal)</strong> or <strong className="text-red-400">Loss (Dr Disposal)</strong>.</p>
+      </div>
+    ),
   }
 ];
 
@@ -333,7 +344,7 @@ export default function App() {
                   <div key={idx} className="bg-slate-950 p-6 rounded-xl border border-slate-800/50">
                     <h3 className="text-lg font-bold text-indigo-300 mb-3">{section.title}</h3>
                     <div className="text-slate-400 leading-relaxed text-sm">
-                      {section.content}
+                      {section.render()}
                     </div>
                   </div>
                 ))}
